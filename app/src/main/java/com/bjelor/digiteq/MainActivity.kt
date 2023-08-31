@@ -2,7 +2,6 @@ package com.bjelor.digiteq
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
@@ -15,7 +14,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initializeGrid() {
         findViewById<RecyclerView>(R.id.grid)?.let { grid ->
-            grid.layoutManager = LinearLayoutManager(this)
+            grid.layoutManager = HorizontalGridLayoutManager(2, 5)
             grid.adapter = HorizontalGridAdapter(50)
         }
     }
