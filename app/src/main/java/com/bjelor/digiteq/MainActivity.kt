@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val layoutManager = HorizontalGridLayoutManager(3, 5)
+        val layoutManager = HorizontalGridLayoutManager(3, 5, true)
         val animation: LayoutAnimationController = AnimationUtils.loadLayoutAnimation(
             this,
             R.anim.layout_animation_scale_in
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         val grid = findViewById<RecyclerView>(R.id.grid)?.also { grid ->
             grid.layoutManager = layoutManager
             grid.layoutAnimation = animation
-            grid.adapter = HorizontalGridAdapter(20)
+            grid.adapter = HorizontalGridAdapter(127)
         }
 
         findViewById<Button>(R.id.button)?.let { button ->

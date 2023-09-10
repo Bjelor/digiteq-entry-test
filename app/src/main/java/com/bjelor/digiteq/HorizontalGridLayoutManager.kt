@@ -19,6 +19,7 @@ import kotlin.math.min
 class HorizontalGridLayoutManager(
     private val rows: Int,
     private val columns: Int,
+    private val isReversed: Boolean = false,
 ) : LayoutManager() {
 
     private var itemWidth: Int = 0
@@ -31,7 +32,7 @@ class HorizontalGridLayoutManager(
 
     private val sectionSize: Int = rows * columns
 
-    private val rightmostItemPosition: Int
+    private val topEndItemPosition: Int
         get() {
             val lastSectionWidth = min(columns, childCount % sectionSize)
             return (itemCount / sectionSize) * sectionSize + lastSectionWidth - 1
@@ -57,7 +58,7 @@ class HorizontalGridLayoutManager(
 
         detachAndScrapAttachedViews(recycler)
 
-        val firstStartOffset = paddingLeft
+        val firstStartOffset = if(isReversed) width - itemWidth - paddingRight else paddingLeft
         val firstTopOffset = paddingTop
 
         var leftOffset = firstStartOffset
@@ -80,13 +81,25 @@ class HorizontalGridLayoutManager(
             val startNextSection = i % sectionSize == 0
 
             if (startNextSection) {
-                leftOffset = section * columns * itemWidth
+                leftOffset = if(isReversed) {
+                    firstStartOffset - section * columns * itemWidth
+                } else {
+                    section * columns * itemWidth
+                }
                 topOffset = firstTopOffset
             } else if (startNextRow) {
-                leftOffset = section * columns * itemWidth
+                leftOffset = if(isReversed) {
+                    firstStartOffset - section * columns * itemWidth
+                } else {
+                    section * columns * itemWidth
+                }
                 topOffset += itemHeight
             } else {
-                leftOffset += itemWidth
+                if(isReversed) {
+                    leftOffset -= itemWidth
+                } else {
+                    leftOffset += itemWidth
+                }
             }
         }
 
@@ -103,16 +116,29 @@ class HorizontalGridLayoutManager(
             return 0
         }
 
-        val leftmostView = getChildAt(0) ?: return 0
-        val rightmostView = getChildAt(rightmostItemPosition) ?: return 0
+        val startView = getChildAt(0) ?: return 0
+        val endView = getChildAt(topEndItemPosition) ?: return 0
+
+        val leftmostView = if (isReversed) endView else startView
+        val rightmostView = if (isReversed) startView else endView
 
         val viewSpan = getDecoratedRight(rightmostView) - getDecoratedLeft(leftmostView)
+
         if (viewSpan < horizontalSpace) {
             return 0
         }
 
-        val leftBoundReached = scrollDelta <= 0
-        val rightBoundReached = scrollDelta + horizontalSpace >= viewSpan
+        val leftBoundReached = if(isReversed) {
+            scrollDelta <= horizontalSpace - viewSpan
+        } else {
+            scrollDelta <= 0
+        }
+        val rightBoundReached = if(isReversed) {
+            scrollDelta >= 0
+        } else {
+            scrollDelta + horizontalSpace >= viewSpan
+        }
+        // TODO: bugs out when scrolled too fast and items aren't animated yet :(
         val delta = if (dx > 0) {
             // Contents are scrolling left
             if (rightBoundReached) {
